@@ -107,7 +107,7 @@ fn packaged_entrypoint_reaches_the_shared_cli() {
     binary.push(if cfg!(windows) { "rtw.exe" } else { "rtw" });
     let output = Command::new(binary).arg("--version").output().unwrap();
     assert!(output.status.success());
-    assert!(String::from_utf8(output.stdout).unwrap().starts_with("rtw 0.1.0"));
+    assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), format!("rtw {}", env!("CARGO_PKG_VERSION")));
 }
 
 #[test]

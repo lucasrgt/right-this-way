@@ -1,0 +1,7 @@
+diff --git a/apps/surface-0624/new/executable-command-example.txt b/apps/surface-0624/new/executable-command-example.txt
+new file mode 100644
+index 0000000..5a7bb3f
+--- /dev/null
++++ b/apps/surface-0624/new/executable-command-example.txt
+@@ -0,0 +1 @@
++DEVIATES_FROM_WAY rtw-stress-0624-15

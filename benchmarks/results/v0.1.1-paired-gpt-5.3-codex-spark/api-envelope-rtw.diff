@@ -1,0 +1,14 @@
+diff --git a/src/api/invoices.py b/src/api/invoices.py
+new file mode 100644
+index 0000000..53ed1d1
+--- /dev/null
++++ b/src/api/invoices.py
+@@ -0,0 +1,8 @@
++from .responses import failure, ok
++
++
++def get_invoice(repository, invoice_id):
++    invoice = repository.find(invoice_id)
++    if invoice is None:
++        return failure("invoice_not_found", "Invoice not found")
++    return ok(invoice)

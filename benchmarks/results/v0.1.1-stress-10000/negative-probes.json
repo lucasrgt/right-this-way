@@ -1,0 +1,42 @@
+[
+  {
+    "group": "apps",
+    "candidate_count": 0,
+    "seconds": 0.657
+  },
+  {
+    "group": "services",
+    "candidate_count": 0,
+    "seconds": 0.609
+  },
+  {
+    "group": "packages",
+    "candidate_count": 0,
+    "seconds": 0.594
+  },
+  {
+    "group": "infra",
+    "candidate_count": 0,
+    "seconds": 0.484
+  },
+  {
+    "group": "data",
+    "candidate_count": 0,
+    "seconds": 0.516
+  },
+  {
+    "group": "science",
+    "candidate_count": 0,
+    "seconds": 0.515
+  },
+  {
+    "group": "clients",
+    "candidate_count": 0,
+    "seconds": 0.5
+  },
+  {
+    "group": "docs",
+    "candidate_count": 0,
+    "seconds": 0.516
+  }
+]

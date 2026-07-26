@@ -1,0 +1,74 @@
+diff --git a/src/api/__pycache__/__init__.cpython-311.pyc b/src/api/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..238cdbe92d3cadfb572ee2f11929b5d2ae84d64a
+GIT binary patch
+literal 128
+zcmZ3^%ge<81b0KzvOx4>5CH>>P{wCAAY(d13PUi1CZpd<h9V{)|1(JPmvC`WvVLMg
+yrha^UW?p7Ve7s&k<u4AK-29Z%oK(9aR-hV?DaHIi;sY}yBjX1K7*WIw6axV2n;8NC
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/api/__pycache__/invoices.cpython-311.pyc b/src/api/__pycache__/invoices.cpython-311.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..152f59189b152c43822be08bfdf5d4b52e382cfe
+GIT binary patch
+literal 561
+zcmZutF-yZh6n=M!R$G&{2-U$MxJ5)amx^{17nkDFrARN4XqyX{R8S&za8MB(b#zjs
+ze<lTo5^!?St<cTMcQH{!KkmJI@4NTD_qaz*%LC$V*FJc|`&A|xXc~+cFt`N<jI^Oc
+z8l*!TlmMgW&`_9C2UC3~SYpyRXYV=fuCQXt4_jHklu^+Xw6Tls7DBkk`!7QBfJ%L-
+zmf)0zv{wpbX9`9beL&^@w|X6diR=|1q`wt#J7p&>JMIy8T2|BLLDS}4mz|WizbFGK
+zBcV(sR&B>+LXH!1V`TEe^0@B=TpY*wOvPbwE{%OzY#7GJtS?%td!DnJJ*;@gabe#I
+znkgY>uu`h}Yv_6~)aP&b6~8+e=;pI-_O^yOy?6FftVDB5(emb?SbHwkqN&<TLA%($
+ztX@|mwKB#|*fG_3T3EivUElJ5woL{+fzYr<6wrN4t#>%<wyh0O!c_ihGJB*DLWZyy
+Q{dY!_Dw!L>Uzg~90yr&zVgLXD
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/api/__pycache__/orders.cpython-311.pyc b/src/api/__pycache__/orders.cpython-311.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..a770ed2b1c4eef0404890c13c52f069552b10b87
+GIT binary patch
+literal 549
+zcmZutze~eF6n=L}?XQ$n(7HGTp<o>BCKQ94;M5MqrAsNjRHAKCF6mHdp@V~p;8;he
+ziu9jJp+gCDa&jwl>*Tw%RYX7T-jDCz``+W;QmF(WW|#HrDf$nQY(Uq+VjqJ6Fkqws
+zO;RRJTBZaTy@RsEq!Q@zC&3b(2GM%eYP7i-Q0Jz$=@&9GUJ38QMl*meyrTb$E*YZI
+zNT`MA(Jt+$J<+)aBa9AFdGxJb0xz<81?bY>3b>tA2vmnNlUHoVtJIyg&2H7AAT%Vj
+zkkF+-u3I+aViXtKB9q`|%W*Bw;hiA1Qm|MM2_sh&YMQp(c6lvVZCSY$ecb8<@hj7-
+zgeh0BN~pOfX!<Z!GS9`w;>*QY$xf7P|9l!%`n{Q&@%Ik>qtmf!OjN^<8M9>S-h9YE
+z<$ZZ)ft^s$<si;Yx8>Nb>HcgP4tNKi!Wy1Lvy2%{hqW8#8Bb#>elnarmk1$KIPm{F
+O^DUX|&f%{Kb-w@>zIwL+
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/api/__pycache__/responses.cpython-311.pyc b/src/api/__pycache__/responses.cpython-311.pyc
+new file mode 100644
+index 0000000000000000000000000000000000000000..109ec5e408aaa719753b14aac6803bb8915acda9
+GIT binary patch
+literal 444
+zcmZusyH3ME5WGD**kA$(rATRsCT@s?C=nHeE=`1x=q%p_1rluSkpjsD1^+;kf)4Tr
+zd`3!Si7G!}$z3XT4<{9?_1r$@=Efh*=8mBFxgOrn=v;EM4ycRjkcu~<#H+X!3J5{T
+zfry-B&0wNaf7PyK=fqbqW1j5KW#Ov$DJ~isF~zxv09~RP76?}@gGo2eMqSh<OCOCk
+z$Juis(+Biv&m40=@FKoj?f26~(BX7D70pB<8S7w8_OWrCiyYX6lGcf1og}H!g*Va0
+z#CIB*k6R1@fnm8YM30Wb8^)vY6gBQq*WhiNz}on{__|pfU2+CJPPd2KwCqRHnzmQ|
+pWO;1$R{q%}RnxIP$9<aF|2m<fbO4}~08uG6-~(I%_y3`N>KD%}Sw#Q<
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/api/invoices.py b/src/api/invoices.py
+new file mode 100644
+index 0000000..53ed1d1
+--- /dev/null
++++ b/src/api/invoices.py
+@@ -0,0 +1,8 @@
++from .responses import failure, ok
++
++
++def get_invoice(repository, invoice_id):
++    invoice = repository.find(invoice_id)
++    if invoice is None:
++        return failure("invoice_not_found", "Invoice not found")
++    return ok(invoice)

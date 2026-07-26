@@ -176,7 +176,10 @@ proven reference, it is not a way yet.
 
 The default result limit is eight. `rtw check` independently retrieves at most
 12 ways from the actual changed paths. The full corpus never needs to enter the
-agent's context.
+agent's context. The disposable SQLite index is reused while its corpus
+fingerprint matches the versioned TOML files. Direct edits, Git updates,
+missing indexes, and corrupt indexes trigger an automatic transactional
+rebuild.
 
 ---
 
@@ -277,6 +280,28 @@ dependencies.
 
 ---
 
+## Benchmarks
+
+RTW ships reproducible, machine-readable benchmark protocols and retains the
+agent events, exact diffs, candidate hashes, and deterministic evaluations.
+
+| Protocol | Result | Key evidence |
+| --- | --- | --- |
+| [Paired coding agent](benchmarks/results/v0.1.1-paired-gpt-5.3-codex-spark/REPORT.md) | PASS | 5/5 RTW arms passed, every guide and check was observed, zero regressions |
+| [1,024-way stress](benchmarks/results/v0.1.1-stress-1024/REPORT.md) | PASS | 128/128 targets ranked first, warm recall p95 0.125 s |
+| [10,000-way stress](benchmarks/results/v0.1.1-stress-10000/REPORT.md) | PASS | 64/64 targets ranked first, warm recall p95 0.594 s |
+
+The paired baselines also passed all five small synthetic tasks, so they are
+reported as passing ties and RTW claims zero measured improvements in that run.
+The first 10,000-way attempt exposed an early global FTS cutoff that placed one
+target second. Version 0.1.1 removes that cutoff and adds a permanent
+more-than-64-ties regression test.
+
+See [the benchmark protocols](benchmarks/README.md) for the outcome taxonomy,
+primary sources, reproduction commands, limitations, and complete results.
+
+---
+
 ## Repository layout
 
 ```text
@@ -284,6 +309,7 @@ right-this-way/
 ├── src/                         Rust CLI, MCP, storage, retrieval, audit
 ├── tests/                       Unlimited black-box and protocol tests
 ├── xtask/                       Canonical repository quality gate
+├── benchmarks/                  Paired agent and large-corpus protocols
 ├── assets/right-this-way/       Portable agent skill
 ├── scripts/                     Release installers
 └── .github/workflows/           CI and release packaging

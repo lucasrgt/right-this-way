@@ -1,6 +1,7 @@
 mod common;
 
 use common::*;
+use rusqlite::Connection;
 use std::{fs, path::Path};
 
 #[test]
@@ -90,11 +91,68 @@ fn guide_combines_scope_tags_and_full_text_across_directories() {
 }
 
 #[test]
+fn guide_ranks_the_scoped_target_after_large_full_text_ties() {
+    let temp = initialized();
+    for index in 0..70 {
+        let mut duplicate = input();
+        duplicate.title = "Documented commands are executable".into();
+        duplicate.intent = "Add a command to user documentation".into();
+        duplicate.guidance = "Present a complete copyable command using current flags.".into();
+        duplicate.tags = vec!["pattern15".into()];
+        duplicate.scopes = vec![format!("docs/archive-{index}/**")];
+        rtw::add(temp.path(), duplicate).unwrap();
+    }
+    let mut distractor = input();
+    distractor.title = "Validate data boundaries".into();
+    distractor.tags = vec!["data".into()];
+    distractor.scopes = vec!["data/current/**".into()];
+    rtw::add(temp.path(), distractor).unwrap();
+    let mut target = input();
+    target.title = "Documented commands are executable".into();
+    target.intent = "Add a command to user documentation".into();
+    target.guidance = "Present a complete copyable command using current flags.".into();
+    target.tags = vec!["pattern15".into()];
+    target.scopes = vec!["data/current/**".into()];
+    let target = rtw::add(temp.path(), target).unwrap();
+
+    let guided = rtw::guide(
+        temp.path(),
+        "Apply pattern15 for an executable command example",
+        &["data/current/new/executable-command-example.txt".into()],
+        8,
+    )
+    .unwrap();
+    assert_eq!(guided[0].id, target.id);
+}
+
+#[test]
 fn guide_rebuilds_disposable_index_and_validates_inputs() {
     let temp = initialized();
-    add_way(temp.path());
+    let way = add_way(temp.path());
     fs::write(temp.path().join(".rtw/index.sqlite"), "corrupt").unwrap();
     assert!(!rtw::guide(temp.path(), "view model", &[], 8).unwrap().is_empty());
+    let index = temp.path().join(".rtw/index.sqlite");
+    Connection::open(&index)
+        .unwrap()
+        .execute_batch("CREATE TABLE sentinel(value INTEGER); INSERT INTO sentinel VALUES(7);")
+        .unwrap();
+    assert!(!rtw::guide(temp.path(), "view model", &[], 8).unwrap().is_empty());
+    let sentinel: i64 = Connection::open(&index)
+        .unwrap()
+        .query_row("SELECT value FROM sentinel", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(sentinel, 7);
+    let path = temp.path().join(format!(".rtw/ways/{}.toml", way.id));
+    let mut changed: rtw::Way = toml::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+    changed.guidance = "Preserve the fingerprintmarker convention.".into();
+    fs::write(&path, toml::to_string_pretty(&changed).unwrap()).unwrap();
+    assert_eq!(rtw::guide(temp.path(), "fingerprintmarker", &[], 8).unwrap()[0].id, way.id);
+    assert!(
+        Connection::open(index)
+            .unwrap()
+            .query_row("SELECT value FROM sentinel", [], |row| row.get::<_, i64>(0))
+            .is_err()
+    );
     assert!(rtw::guide(temp.path(), "x", &[], 8).unwrap().is_empty());
     assert!(rtw::guide(temp.path(), "", &[], 8).is_err());
     assert!(rtw::guide(temp.path(), "task", &[], 0).is_err());

@@ -42,9 +42,13 @@ Work is finishing       -> rtw check
 └── index.sqlite
 ```
 
-TOML way files are versioned and authoritative. SQLite FTS5 is rebuilt from
-those files and may be deleted at any time. `config.local.toml` is ignored and
-stores a developer's judge command. `config.toml` is an optional team override.
+TOML way files are versioned and authoritative. SQLite FTS5 is a disposable
+cache and may be deleted at any time. RTW fingerprints the serialized corpus,
+reuses a matching index, and rebuilds it in one transaction when a way changes
+or the index is missing or corrupt. This detects direct TOML edits and ways
+received through Git without requiring a separate synchronization command.
+`config.local.toml` is ignored and stores a developer's judge command.
+`config.toml` is an optional team override.
 
 ## Retrieval
 
@@ -54,9 +58,12 @@ stores a developer's judge command. `config.toml` is an optional team override.
 2. exact semantic tag matches against the task and paths;
 3. SQLite FTS5 matches across title, intent, guidance, and tags.
 
-Scope matches rank first, followed by tags and full-text relevance. This lets a
-view-model way recorded under one feature guide a new view model in a distant
-directory without loading the full corpus into model context.
+Scope matches rank first, followed by exact tags and unique full-text term
+overlap. FTS returns the complete internal match set before bounded ranking, so
+large groups of semantically identical ways cannot exclude the correct scoped
+candidate through an early global cutoff. This lets a view-model way recorded
+under one feature guide a new view model in a distant directory without
+loading the full corpus into model context.
 
 ## Alignment audit
 

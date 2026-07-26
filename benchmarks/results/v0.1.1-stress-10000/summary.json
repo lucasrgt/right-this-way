@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "benchmark": "large-corpus-stress",
+  "started_at": "2026-07-26T18:42:56.412929+00:00",
+  "completed_at": "2026-07-26T18:45:11.159707+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "candidate": {
+    "version": "rtw 0.1.1",
+    "sha256": "29cba1a12311483c0eceab7ddaa42da98ef0fe794519c003c59c3404ecdb6c3f"
+  },
+  "corpus_size": 10000,
+  "families": 16,
+  "contexts": 625,
+  "recall": {
+    "probes": 64,
+    "targets_recalled": 64,
+    "ranked_first": 64,
+    "bounded": 64,
+    "negative_probes": 8,
+    "negative_empty": 8,
+    "cold_rebuild_seconds": 68.141,
+    "warm_latency_seconds": {
+      "p50": 0.532,
+      "p95": 0.594,
+      "max": 0.657
+    },
+    "index_bytes": 4136960
+  },
+  "check": {
+    "positive": {
+      "exit": 1,
+      "seconds": 0.891,
+      "ways_checked": 12,
+      "findings": 1,
+      "exact_target": true
+    },
+    "negative": {
+      "exit": 0,
+      "seconds": 0.828,
+      "ways_checked": 12,
+      "findings": 0
+    }
+  },
+  "passed": true
+}

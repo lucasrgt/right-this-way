@@ -1,0 +1,146 @@
+[
+  {
+    "key": "react-expensive-derived-usememo",
+    "domain": "frontend",
+    "title": "Measured derived collections use memoization",
+    "intent": "Add an expensive pure React derivation",
+    "guidance": "Wrap a measured expensive pure derivation in useMemo with its complete dependency list.",
+    "tags": ["react", "performance", "usememo"],
+    "source": "https://react.dev/reference/react/useMemo"
+  },
+  {
+    "key": "semantic-design-tokens",
+    "domain": "frontend",
+    "title": "Components use semantic design tokens",
+    "intent": "Add visual styling to a component",
+    "guidance": "Reference role-based design tokens for component color and spacing instead of introducing literal values.",
+    "tags": ["design-system", "tokens", "frontend"],
+    "source": "https://designsystem.digital.gov/design-tokens/"
+  },
+  {
+    "key": "feature-view-model-state",
+    "domain": "architecture",
+    "title": "Feature state lives behind a view model",
+    "intent": "Add a stateful feature workflow",
+    "guidance": "Keep transitions and injected dependencies in the feature view model while exposing immutable state to the view.",
+    "tags": ["view-model", "state", "architecture"],
+    "source": "https://developer.android.com/topic/architecture/ui-layer/stateholders"
+  },
+  {
+    "key": "localized-message-catalog",
+    "domain": "frontend",
+    "title": "User-facing copy comes from the message catalog",
+    "intent": "Add user-facing application text",
+    "guidance": "Store translatable copy under a stable catalog key and reference that key from feature code.",
+    "tags": ["localization", "copy", "frontend"],
+    "source": "https://developer.android.com/guide/topics/resources/localization"
+  },
+  {
+    "key": "api-error-envelope",
+    "domain": "backend",
+    "title": "API handlers use the shared error envelope",
+    "intent": "Add an API endpoint with failure responses",
+    "guidance": "Map domain failures through the repository response helpers so clients receive the established error envelope.",
+    "tags": ["api", "errors", "backend"],
+    "source": "https://www.rfc-editor.org/rfc/rfc9457"
+  },
+  {
+    "key": "http-retry-policy",
+    "domain": "clients",
+    "title": "HTTP clients use the shared retry policy",
+    "intent": "Add an outbound HTTP client",
+    "guidance": "Use the shared bounded retry helper and explicit timeout instead of implementing an unbounded local retry loop.",
+    "tags": ["http", "retry", "client"],
+    "source": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+  },
+  {
+    "key": "parameterized-repository-query",
+    "domain": "backend",
+    "title": "Repositories parameterize dynamic SQL values",
+    "intent": "Add a repository query",
+    "guidance": "Keep SQL structure static and pass every dynamic value through the database driver's parameter interface.",
+    "tags": ["sql", "repository", "backend"],
+    "source": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+  },
+  {
+    "key": "tenant-aware-cache-key",
+    "domain": "backend",
+    "title": "Cache keys include tenant identity",
+    "intent": "Cache data owned by a tenant",
+    "guidance": "Build cache keys from both tenant identity and resource identity using the shared key helper.",
+    "tags": ["cache", "multitenancy", "backend"],
+    "source": "https://docs.aws.amazon.com/prescriptive-guidance/latest/saas-multitenant-api-access-authorization/avp-multitenant-architecture.html"
+  },
+  {
+    "key": "structured-operation-logging",
+    "domain": "operations",
+    "title": "Operations emit structured logs",
+    "intent": "Add observable application behavior",
+    "guidance": "Use the shared structured logger with stable event names and fields instead of interpolated prose.",
+    "tags": ["logging", "observability", "operations"],
+    "source": "https://opentelemetry.io/docs/specs/otel/logs/data-model/"
+  },
+  {
+    "key": "terraform-common-tags",
+    "domain": "infrastructure",
+    "title": "Terraform resources merge common tags",
+    "intent": "Add a managed cloud resource",
+    "guidance": "Merge the module common tags with stable resource-specific tags on every supported resource.",
+    "tags": ["terraform", "tags", "infrastructure"],
+    "source": "https://developer.hashicorp.com/terraform/language/functions/merge"
+  },
+  {
+    "key": "kubernetes-health-probes",
+    "domain": "infrastructure",
+    "title": "Services expose startup and health probes",
+    "intent": "Deploy an application workload",
+    "guidance": "Configure startup, readiness, and liveness probes using the repository service defaults.",
+    "tags": ["kubernetes", "health", "infrastructure"],
+    "source": "https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/"
+  },
+  {
+    "key": "validated-data-boundary",
+    "domain": "data",
+    "title": "Data pipelines validate boundary schemas",
+    "intent": "Ingest an external dataset",
+    "guidance": "Validate required fields, types, and units at the ingestion boundary before transforming records.",
+    "tags": ["data", "schema", "validation"],
+    "source": "https://json-schema.org/draft/2020-12/json-schema-core"
+  },
+  {
+    "key": "explicit-scientific-units",
+    "domain": "scientific",
+    "title": "Scientific values carry explicit units",
+    "intent": "Add a scientific calculation",
+    "guidance": "Name, validate, and convert physical units explicitly at module boundaries before calculation.",
+    "tags": ["scientific", "units", "calculation"],
+    "source": "https://www.nist.gov/pml/owm/si-units"
+  },
+  {
+    "key": "cooperative-task-cancellation",
+    "domain": "concurrency",
+    "title": "Background work supports cooperative cancellation",
+    "intent": "Add a long-running concurrent operation",
+    "guidance": "Thread the repository cancellation signal through background work and clean up acquired resources on cancellation.",
+    "tags": ["concurrency", "cancellation", "lifecycle"],
+    "source": "https://docs.rs/tokio-util/latest/tokio_util/sync/struct.CancellationToken.html"
+  },
+  {
+    "key": "shared-test-fixture-builder",
+    "domain": "testing",
+    "title": "Tests use the shared fixture builder",
+    "intent": "Add test data for a domain entity",
+    "guidance": "Start from the shared valid fixture builder and override only fields relevant to the behavior under test.",
+    "tags": ["testing", "fixtures", "builder"],
+    "source": "https://martinfowler.com/bliki/ObjectMother.html"
+  },
+  {
+    "key": "executable-command-example",
+    "domain": "documentation",
+    "title": "Documented commands are executable",
+    "intent": "Add a command to user documentation",
+    "guidance": "Present a complete copyable command using current flags and verify it against the shipped CLI.",
+    "tags": ["documentation", "cli", "examples"],
+    "source": "https://diataxis.fr/how-to-guides/"
+  }
+]

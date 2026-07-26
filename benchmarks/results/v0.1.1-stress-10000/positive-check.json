@@ -1,0 +1,11 @@
+{
+  "ways_checked": 12,
+  "deviations": [
+    {
+      "way_id": "rtw-stress-0624-15",
+      "path": "apps/surface-0624/new/executable-command-example.txt",
+      "line": 1,
+      "reason": "fixture explicitly deviates from the selected proven pattern"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+diff --git a/src/clients/invoicesClient.ts b/src/clients/invoicesClient.ts
+new file mode 100644
+index 0000000..ec7df17
+--- /dev/null
++++ b/src/clients/invoicesClient.ts
+@@ -0,0 +1,7 @@
++import { requestWithRetry } from "./request";
++
++export function getInvoice(baseUrl: string, invoiceId: string) {
++  return requestWithRetry(`${baseUrl}/invoices/${invoiceId}`, {
++    timeoutMs: 5_000,
++  });
++}

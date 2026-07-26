@@ -1,0 +1,27 @@
+diff --git a/src/ui/DangerButton.tsx b/src/ui/DangerButton.tsx
+new file mode 100644
+index 0000000..ab998bf
+--- /dev/null
++++ b/src/ui/DangerButton.tsx
+@@ -0,0 +1,21 @@
++type Props = {
++  label: string;
++  disabled?: boolean;
++  onClick(): void;
++};
++
++export function DangerButton({ label, disabled, onClick }: Props) {
++  return (
++    <button
++      disabled={disabled}
++      onClick={onClick}
++      style={{
++        background: "var(--color-action-danger)",
++        color: "var(--color-text-on-action)",
++        padding: "var(--space-3)",
++      }}
++    >
++      {label}
++    </button>
++  );
++}

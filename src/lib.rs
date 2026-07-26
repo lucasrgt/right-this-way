@@ -5,14 +5,8 @@ use glob::Pattern;
 use rusqlite::{Connection, ToSql};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use std::{
-    collections::{HashMap, HashSet},
-    ffi::OsString,
-    fs,
-    io::{self, BufRead, Write},
-    path::{Component, Path, PathBuf},
-    process::{Command, Stdio},
-};
+#[rustfmt::skip]
+use std::{collections::HashSet, ffi::OsString, fs, hash::{DefaultHasher, Hash, Hasher}, io::{self, BufRead, Write}, path::{Component, Path, PathBuf}, process::{Command, Stdio}};
 use ulid::Ulid;
 
 const SKILL: &str = include_str!("../assets/right-this-way/SKILL.md");
@@ -128,7 +122,7 @@ pub fn guide(root: &Path, task: &str, paths: &[String], limit: usize) -> Result<
     let ways = load_ways(&root)?;
     let connection = rebuild_index(&root, &ways)?;
     let terms = tokens(&format!("{task} {}", paths.join(" ")));
-    let positions: HashMap<_, _> = fts_ids(&connection, &terms)?.into_iter().enumerate().map(|(index, id)| (id, index)).collect();
+    let matches: HashSet<_> = fts_ids(&connection, &terms)?.into_iter().collect();
     let mut scored = ways
         .into_iter()
         .filter_map(|way| {
@@ -138,8 +132,8 @@ pub fn guide(root: &Path, task: &str, paths: &[String], limit: usize) -> Result<
                     .any(|scope| Pattern::new(scope).is_ok_and(|pattern| pattern.matches(&path.replace('\\', "/"))))
             });
             let tags = way.tags.iter().filter(|tag| terms.contains(&tag.to_lowercase())).count();
-            let fts = positions.get(&way.id).copied();
-            let score = usize::from(scope) * 1_000 + tags * 100 + fts.map_or(0, |position| 50usize.saturating_sub(position));
+            let relevance = way_relevance(&matches, &way, &terms);
+            let score = usize::from(scope) * 1_000 + tags * 100 + relevance;
             (score > 0).then_some((score, way))
         })
         .collect::<Vec<_>>();
@@ -209,16 +203,17 @@ fn load_ways(root: &Path) -> Result<Vec<Way>> {
         .collect()
 }
 
+#[rustfmt::skip]
 fn rebuild_index(root: &Path, ways: &[Way]) -> Result<Connection> {
+    let path = root.join(".rtw/index.sqlite");
+    let fingerprint = { let mut hasher = DefaultHasher::new(); serde_json::to_string(ways)?.hash(&mut hasher); format!("{:x}", hasher.finish()) };
+    if let Ok(connection) = Connection::open(&path) { let cached = connection.query_row("SELECT fingerprint FROM metadata LIMIT 1", [], |row| row.get::<_, String>(0)).ok(); if cached.as_deref() == Some(&fingerprint) { return Ok(connection); } drop(connection); }
     invalidate(root);
-    let connection = Connection::open(root.join(".rtw/index.sqlite"))?;
-    connection.execute_batch("CREATE VIRTUAL TABLE search USING fts5(id UNINDEXED,title,intent,guidance,tags,tokenize='porter unicode61');")?;
-    for way in ways {
-        let tags = way.tags.join(" ");
-        let values: [&dyn ToSql; 5] = [&way.id, &way.title, &way.intent, &way.guidance, &tags];
-        connection.execute("INSERT INTO search(id,title,intent,guidance,tags) VALUES (?1,?2,?3,?4,?5)", values)?;
-    }
-    Ok(connection)
+    let mut connection = Connection::open(path)?;
+    connection.execute_batch("CREATE TABLE metadata(fingerprint TEXT NOT NULL); CREATE VIRTUAL TABLE search USING fts5(id UNINDEXED,title,intent,guidance,tags,tokenize='porter unicode61');")?;
+    let transaction = connection.transaction()?; transaction.execute("INSERT INTO metadata VALUES (?1)", [&fingerprint])?;
+    for way in ways { let tags = way.tags.join(" "); let values: [&dyn ToSql; 5] = [&way.id, &way.title, &way.intent, &way.guidance, &tags]; transaction.execute("INSERT INTO search(id,title,intent,guidance,tags) VALUES (?1,?2,?3,?4,?5)", values)?; }
+    transaction.commit()?; Ok(connection)
 }
 
 fn fts_ids(connection: &Connection, terms: &HashSet<String>) -> Result<Vec<String>> {
@@ -226,7 +221,7 @@ fn fts_ids(connection: &Connection, terms: &HashSet<String>) -> Result<Vec<Strin
         return Ok(Vec::new());
     }
     let query = terms.iter().map(|term| format!("\"{term}\"")).collect::<Vec<_>>().join(" OR ");
-    let mut statement = connection.prepare("SELECT id FROM search WHERE search MATCH ?1 ORDER BY bm25(search) LIMIT 64")?;
+    let mut statement = connection.prepare("SELECT id FROM search WHERE search MATCH ?1 ORDER BY bm25(search)")?;
     Ok(statement.query_map([query], |row| row.get(0))?.collect::<std::result::Result<Vec<_>, _>>()?)
 }
 
@@ -309,6 +304,12 @@ fn normalized(values: Vec<String>) -> Vec<String> { let mut values = values.into
 
 #[rustfmt::skip]
 fn tokens(value: &str) -> HashSet<String> { value.to_lowercase().split(|character: char| !character.is_alphanumeric()).filter(|part| part.len() > 1).map(str::to_owned).collect() }
+
+#[rustfmt::skip]
+fn way_terms(way: &Way) -> HashSet<String> { tokens(&format!("{} {} {} {}", way.title, way.intent, way.guidance, way.tags.join(" "))) }
+
+#[rustfmt::skip]
+fn way_relevance(matches: &HashSet<String>, way: &Way, terms: &HashSet<String>) -> usize { if matches.contains(&way.id) { way_terms(way).intersection(terms).count() } else { 0 } }
 
 #[rustfmt::skip]
 fn validate_revision(revision: &str) -> Result<()> { if revision.is_empty() || revision.starts_with('-') || !revision.chars().all(|character| character.is_ascii_alphanumeric() || "_./~^-".contains(character)) { bail!("invalid base revision") } Ok(()) }

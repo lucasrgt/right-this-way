@@ -1,0 +1,28 @@
+diff --git a/src/features/payments/paymentViewModel.ts b/src/features/payments/paymentViewModel.ts
+new file mode 100644
+index 0000000..afb30a0
+--- /dev/null
++++ b/src/features/payments/paymentViewModel.ts
+@@ -0,0 +1,22 @@
++export type PaymentState = Readonly<{
++  status: "idle" | "submitting" | "success" | "error";
++  message?: string;
++}>;
++
++export function createPaymentViewModel(processPayment: () => Promise<void>) {
++  let state: PaymentState = { status: "idle" };
++  return {
++    get state(): PaymentState {
++      return state;
++    },
++    async submit() {
++      state = { status: "submitting" };
++      try {
++        await processPayment();
++        state = { status: "success" };
++      } catch (error) {
++        state = { status: "error", message: String(error) };
++      }
++    },
++  };
++}

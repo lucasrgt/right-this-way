@@ -1,0 +1,22 @@
+diff --git a/infra/modules/queue/main.tf b/infra/modules/queue/main.tf
+new file mode 100644
+index 0000000..8331b0f
+--- /dev/null
++++ b/infra/modules/queue/main.tf
+@@ -0,0 +1,8 @@
++resource "aws_sqs_queue" "queue" {
++  name = var.name
++
++  tags = merge(var.common_tags, {
++    Service   = "queue"
++    ManagedBy = "terraform"
++  })
++}
+diff --git a/infra/modules/queue/variables.tf b/infra/modules/queue/variables.tf
+new file mode 100644
+index 0000000..dab589c
+--- /dev/null
++++ b/infra/modules/queue/variables.tf
+@@ -0,0 +1,2 @@
++variable "name" { type = string }
++variable "common_tags" { type = map(string) }
