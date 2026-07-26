@@ -1,0 +1,4 @@
+interface:
+  display_name: "Right This Way"
+  short_description: "Follow proven repository patterns consistently"
+  default_prompt: "Use $right-this-way to find and follow the repository patterns relevant to this task."
