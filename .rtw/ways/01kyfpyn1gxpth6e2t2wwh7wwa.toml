@@ -1,0 +1,15 @@
+schema = 1
+id = "01kyfpyn1gxpth6e2t2wwh7wwa"
+title = "Shared CLI and MCP core"
+intent = "Expose the same repository-pattern operation through another transport"
+guidance = "Put domain behavior in the shared Rust core and keep CLI and MCP as thin adapters that call it."
+scopes = ["src/**"]
+tags = [
+    "cli",
+    "mcp",
+    "shared-core",
+]
+references = ["src/lib.rs"]
+recorded_at = "2026-07-26T17:18:21.232214500Z"
+recorded_by = "Lucas Rodrigues"
+recorded_commit = "aa47161f67a953c7ebe66445ea5e1c3489012bf8"
