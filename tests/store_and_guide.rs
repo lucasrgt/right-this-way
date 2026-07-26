@@ -25,10 +25,12 @@ fn add_persists_a_normalized_proven_way() {
     let mut input = input();
     input.tags.push("state".into());
     input.scopes.push(r"src\features\**".into());
+    input.references = vec![r"src\features\orders\order_view_model.rs".into()];
     let way = rtw::add(temp.path(), input).unwrap();
     assert_eq!(way.recorded_by, "Pattern Author");
     assert_eq!(way.tags, ["state", "view-model"]);
     assert!(way.scopes.contains(&"src/features/**".into()));
+    assert_eq!(way.references, ["src/features/orders/order_view_model.rs"]);
     assert_eq!(way.recorded_commit.len(), 40);
     let stored = fs::read_to_string(temp.path().join(format!(".rtw/ways/{}.toml", way.id))).unwrap();
     assert_eq!(toml::from_str::<rtw::Way>(&stored).unwrap(), way);

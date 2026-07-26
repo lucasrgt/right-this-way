@@ -78,13 +78,16 @@ pub fn add(root: &Path, input: NewWay) -> Result<Way> {
     require_text("title", &input.title)?;
     require_text("intent", &input.intent)?;
     require_text("guidance", &input.guidance)?;
-    if input.scopes.is_empty() || input.tags.is_empty() || input.references.is_empty() {
+    let scopes = normalized(input.scopes);
+    let tags = normalized(input.tags);
+    let references = normalized(input.references);
+    if scopes.is_empty() || tags.is_empty() || references.is_empty() {
         bail!("a way requires at least one scope, tag, and reference")
     }
-    for scope in &input.scopes {
+    for scope in &scopes {
         Pattern::new(scope).with_context(|| format!("invalid scope {scope}"))?;
     }
-    for reference in &input.references {
+    for reference in &references {
         let relative = Path::new(reference);
         safe_relative(relative)?;
         if !root.join(relative).is_file() {
@@ -98,9 +101,9 @@ pub fn add(root: &Path, input: NewWay) -> Result<Way> {
         title: input.title.trim().into(),
         intent: input.intent.trim().into(),
         guidance: input.guidance.trim().into(),
-        scopes: normalized(input.scopes),
-        tags: normalized(input.tags),
-        references: normalized(input.references),
+        scopes,
+        tags,
+        references,
         recorded_at: Utc::now(),
         recorded_by: input
             .recorded_by
