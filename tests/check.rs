@@ -85,12 +85,25 @@ fn oversized_diff_is_refused() {
 #[test]
 fn git_quoted_unicode_paths_are_read_as_real_untracked_files() {
     let temp = initialized();
+    let way = add_way(temp.path());
     git(temp.path(), &["config", "core.quotePath", "true"]);
-    let directory = temp.path().join("src/ações");
+    let directory = temp.path().join("src/features/ações");
     fs::create_dir_all(&directory).unwrap();
     fs::write(directory.join("correção.rs"), "pub struct Correcao;\n").unwrap();
+    judge(temp.path(), "pass", &way);
 
-    let result = rtw::check(temp.path(), "inspect an unrelated unicode path", "HEAD").unwrap();
+    let result = rtw::check(temp.path(), "create a unicode view model", "HEAD").unwrap();
+
+    assert_eq!(result.ways_checked, 1);
+    assert!(result.deviations.is_empty());
+}
+
+#[test]
+fn an_empty_way_store_short_circuits_before_reading_an_oversized_diff() {
+    let temp = initialized();
+    fs::write(temp.path().join("large.txt"), "x".repeat(121_000)).unwrap();
+
+    let result = rtw::check(temp.path(), "unrelated work", "HEAD").unwrap();
 
     assert_eq!(result.ways_checked, 0);
     assert!(result.deviations.is_empty());

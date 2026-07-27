@@ -149,6 +149,10 @@ pub fn check(root: &Path, task: &str, base: &str) -> Result<CheckResult> {
     let mut paths = git(&root, &["diff", "--name-only", base, "--"])?.lines().map(str::to_owned).collect::<Vec<_>>();
     let untracked = git(&root, &["ls-files", "--others", "--exclude-standard"])?;
     paths.extend(untracked.lines().map(str::to_owned));
+    let ways = guide(&root, task, &paths, 12)?;
+    if ways.is_empty() {
+        return Ok(clean_check(0));
+    }
     let mut diff = git(&root, &["diff", "--no-ext-diff", "--unified=3", base, "--"])?;
     for path in untracked.lines() {
         let contents = fs::read_to_string(root.join(path)).with_context(|| format!("untracked file is not auditable text: {path}"))?;
@@ -163,20 +167,13 @@ pub fn check(root: &Path, task: &str, base: &str) -> Result<CheckResult> {
     if diff.len() > 120_000 {
         bail!("diff exceeds the 120000 byte audit limit")
     }
-    let ways = guide(&root, task, &paths, 12)?;
-    if ways.is_empty() || diff.trim().is_empty() {
-        return Ok(CheckResult {
-            ways_checked: ways.len(),
-            deviations: Vec::new(),
-        });
+    if diff.trim().is_empty() {
+        return Ok(clean_check(ways.len()));
     }
     let first = judge(&root, &audit_prompt(task, &ways, &diff, None)?)?;
     let candidates = valid_deviations(first.deviations, &ways, &paths)?;
     if candidates.is_empty() {
-        return Ok(CheckResult {
-            ways_checked: ways.len(),
-            deviations: Vec::new(),
-        });
+        return Ok(clean_check(ways.len()));
     }
     let second = judge(&root, &audit_prompt(task, &ways, &diff, Some(&candidates))?)?;
     let confirmed = valid_deviations(second.deviations, &ways, &paths)?;
@@ -284,6 +281,9 @@ fn valid_deviations(items: Vec<Deviation>, ways: &[Way], paths: &[String]) -> Re
     }
     Ok(items)
 }
+
+#[rustfmt::skip]
+fn clean_check(ways_checked: usize) -> CheckResult { CheckResult { ways_checked, deviations: Vec::new() } }
 
 #[rustfmt::skip]
 fn git(root: &Path, arguments: &[&str]) -> Result<String> {
