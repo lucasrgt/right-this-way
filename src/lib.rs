@@ -285,8 +285,9 @@ fn valid_deviations(items: Vec<Deviation>, ways: &[Way], paths: &[String]) -> Re
     Ok(items)
 }
 
+#[rustfmt::skip]
 fn git(root: &Path, arguments: &[&str]) -> Result<String> {
-    let output = Command::new("git").args(arguments).current_dir(root).output().context("start git")?;
+    let output = Command::new("git").args(["-c", "core.quotePath=false"]).args(arguments).current_dir(root).output().context("start git")?;
     if !output.status.success() {
         bail!("git {} failed: {}", arguments.join(" "), String::from_utf8_lossy(&output.stderr).trim())
     }

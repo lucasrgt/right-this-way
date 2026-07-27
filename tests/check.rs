@@ -81,3 +81,17 @@ fn oversized_diff_is_refused() {
     fs::write(temp.path().join("README.md"), "x".repeat(121_000)).unwrap();
     assert!(rtw::check(temp.path(), "view model work", "HEAD").is_err());
 }
+
+#[test]
+fn git_quoted_unicode_paths_are_read_as_real_untracked_files() {
+    let temp = initialized();
+    git(temp.path(), &["config", "core.quotePath", "true"]);
+    let directory = temp.path().join("src/ações");
+    fs::create_dir_all(&directory).unwrap();
+    fs::write(directory.join("correção.rs"), "pub struct Correcao;\n").unwrap();
+
+    let result = rtw::check(temp.path(), "inspect an unrelated unicode path", "HEAD").unwrap();
+
+    assert_eq!(result.ways_checked, 0);
+    assert!(result.deviations.is_empty());
+}
