@@ -2,7 +2,26 @@ mod common;
 
 use common::*;
 use rusqlite::Connection;
-use std::{fs, path::Path};
+use std::{fs, path::Path, process::Command};
+
+#[test]
+fn csm_storage_is_opt_in_and_does_not_rewrite_root_files() {
+    let temp = repo();
+    let agents = "# Existing\n";
+    fs::write(temp.path().join("AGENTS.md"), agents).unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_rtw"))
+        .current_dir(temp.path())
+        .env("CSM_STORAGE_ROOT", ".csm")
+        .arg("init")
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    assert!(temp.path().join(".csm/rtw/config.local.toml").is_file());
+    assert!(!temp.path().join(".rtw").exists());
+    assert_eq!(fs::read_to_string(temp.path().join("AGENTS.md")).unwrap(), agents);
+    assert!(!temp.path().join(".gitignore").exists());
+}
 
 #[test]
 fn init_is_idempotent_and_manages_agent_files() {

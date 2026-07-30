@@ -54,18 +54,14 @@ pub fn repository(path: &Path) -> Result<PathBuf> {
     fs::canonicalize(root.trim()).context("resolve repository root")
 }
 
-pub fn init(root: &Path, agent_files: &[PathBuf]) -> Result<()> {
-    let root = repository(root)?;
-    fs::create_dir_all(root.join(".rtw/ways"))?;
-    write_new(root.join(".rtw/config.local.toml"), CONFIG)?;
-    fs::write(root.join(".rtw/SKILL.md"), SKILL)?;
-    append_once(root.join(".gitignore"), IGNORE)?;
-    for file in agent_files {
-        safe_relative(file)?;
-        upsert_block(root.join(file), INSTRUCTIONS)?;
-    }
-    Ok(())
-}
+#[rustfmt::skip]
+fn data_dir(root: &Path) -> PathBuf { match std::env::var_os("CSM_STORAGE_ROOT") { Some(path) => { let path = PathBuf::from(path); let path = if path.is_absolute() { path } else { root.join(path) }; path.join("rtw") }, None => root.join(".rtw") } }
+
+#[rustfmt::skip]
+fn store_exclude(root: &Path) -> String { let relative = data_dir(root).strip_prefix(root).ok().map(|path| path.to_string_lossy().replace('\\', "/")).unwrap_or_else(|| "__csm_external_store__".into()); format!(":(exclude){relative}/**") }
+
+#[rustfmt::skip]
+pub fn init(root: &Path, agent_files: &[PathBuf]) -> Result<()> { let root = repository(root)?; let data = data_dir(&root); fs::create_dir_all(data.join("ways"))?; write_new(data.join("config.local.toml"), CONFIG)?; fs::write(data.join("SKILL.md"), SKILL)?; if std::env::var_os("CSM_STORAGE_ROOT").is_none() { append_once(root.join(".gitignore"), IGNORE)?; for file in agent_files { safe_relative(file)?; upsert_block(root.join(file), INSTRUCTIONS)?; } } Ok(()) }
 
 pub fn add(root: &Path, input: NewWay) -> Result<Way> {
     let root = repository(root)?;
@@ -106,7 +102,7 @@ pub fn add(root: &Path, input: NewWay) -> Result<Way> {
             .into(),
         recorded_commit: git(&root, &["rev-parse", "HEAD"])?.trim().into(),
     };
-    let directory = root.join(".rtw/ways");
+    let directory = data_dir(&root).join("ways");
     fs::create_dir_all(&directory)?;
     write_new(directory.join(format!("{}.toml", way.id)), &toml::to_string_pretty(&way)?)?;
     invalidate(&root);
@@ -146,14 +142,18 @@ pub fn check(root: &Path, task: &str, base: &str) -> Result<CheckResult> {
     require_text("task", task)?;
     validate_revision(base)?;
     git(&root, &["rev-parse", "--verify", base])?;
-    let mut paths = git(&root, &["diff", "--name-only", base, "--"])?.lines().map(str::to_owned).collect::<Vec<_>>();
-    let untracked = git(&root, &["ls-files", "--others", "--exclude-standard"])?;
+    let exclude = store_exclude(&root);
+    let mut paths = git(&root, &["diff", "--name-only", base, "--", ".", &exclude])?
+        .lines()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    let untracked = git(&root, &["ls-files", "--others", "--exclude-standard", "--", ".", &exclude])?;
     paths.extend(untracked.lines().map(str::to_owned));
     let ways = guide(&root, task, &paths, 12)?;
     if ways.is_empty() {
         return Ok(clean_check(0));
     }
-    let mut diff = git(&root, &["diff", "--no-ext-diff", "--unified=3", base, "--"])?;
+    let mut diff = git(&root, &["diff", "--no-ext-diff", "--unified=3", base, "--", ".", &exclude])?;
     for path in untracked.lines() {
         let contents = fs::read_to_string(root.join(path)).with_context(|| format!("untracked file is not auditable text: {path}"))?;
         diff.push_str(&format!(
@@ -185,7 +185,7 @@ pub fn check(root: &Path, task: &str, base: &str) -> Result<CheckResult> {
 }
 
 fn load_ways(root: &Path) -> Result<Vec<Way>> {
-    let directory = root.join(".rtw/ways");
+    let directory = data_dir(root).join("ways");
     if !directory.exists() {
         bail!("Right This Way is not initialized; run rtw init")
     }
@@ -202,7 +202,7 @@ fn load_ways(root: &Path) -> Result<Vec<Way>> {
 
 #[rustfmt::skip]
 fn rebuild_index(root: &Path, ways: &[Way]) -> Result<Connection> {
-    let path = root.join(".rtw/index.sqlite");
+    let path = data_dir(root).join("index.sqlite");
     let fingerprint = { let mut hasher = DefaultHasher::new(); serde_json::to_string(ways)?.hash(&mut hasher); format!("{:x}", hasher.finish()) };
     if let Ok(connection) = Connection::open(&path) { let cached = connection.query_row("SELECT fingerprint FROM metadata LIMIT 1", [], |row| row.get::<_, String>(0)).ok(); if cached.as_deref() == Some(&fingerprint) { return Ok(connection); } drop(connection); }
     invalidate(root);
@@ -259,8 +259,8 @@ fn judge(root: &Path, prompt: &str) -> Result<Audit> {
 }
 
 fn load_config(root: &Path) -> Result<Config> {
-    let local = root.join(".rtw/config.local.toml");
-    let project = root.join(".rtw/config.toml");
+    let local = data_dir(root).join("config.local.toml");
+    let project = data_dir(root).join("config.toml");
     let user = dirs::config_dir().map(|path| path.join("right-this-way/config.toml"));
     let path = [Some(local), Some(project), user]
         .into_iter()
@@ -343,7 +343,7 @@ fn upsert_block(path: PathBuf, block: &str) -> Result<()> {
 }
 
 fn invalidate(root: &Path) {
-    let _ = fs::remove_file(root.join(".rtw/index.sqlite"));
+    let _ = fs::remove_file(data_dir(root).join("index.sqlite"));
 }
 
 #[derive(Parser)]
