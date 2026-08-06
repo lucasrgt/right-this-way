@@ -54,3 +54,16 @@ This repository uses Right This Way (`rtw`) to preserve proven implementation pa
 
 Tests and linters do not replace `rtw check`. Do not report work ready until the applicable check exits with code 0.
 <!-- rtw:instructions:end -->
+
+
+## Optional Prime Agent adapter
+
+`integrations/prime-agent` is a thin optional host adapter. It may invoke only
+the `rtw` CLI with literal argv and must never parse semantic records or
+reimplement Rust behavior. It activates only for `.rtw/SKILL.md` and
+must remain completely inactive when the Git root contains `csm.toml`. CSM has
+absolute Prime-integration precedence.
+
+When changing the adapter, run `npm ci`, `npm test`, `npm run typecheck`, and
+`npm pack --dry-run` from `integrations/prime-agent` in addition to
+`cargo xtask verify`.
